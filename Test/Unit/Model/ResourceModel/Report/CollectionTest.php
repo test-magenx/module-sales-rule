@@ -67,9 +67,6 @@ class CollectionTest extends TestCase
      */
     protected $selectMock;
 
-    /**
-     * @inheritDoc
-     */
     protected function setUp(): void
     {
         $this->entityFactory = $this->createMock(EntityFactory::class);
@@ -118,18 +115,12 @@ class CollectionTest extends TestCase
         );
     }
 
-    /**
-     * @return void
-     */
-    public function testAddRuleFilter(): void
+    public function testAddRuleFilter()
     {
         $this->assertInstanceOf(get_class($this->object), $this->object->addRuleFilter([]));
     }
 
-    /**
-     * @return void
-     */
-    public function testApplyAggregatedTableNegativeIsTotals(): void
+    public function testApplyAggregatedTableNegativeIsTotals()
     {
         $this->selectMock->expects($this->once())
             ->method('group')
@@ -137,10 +128,7 @@ class CollectionTest extends TestCase
         $this->assertInstanceOf(get_class($this->object), $this->object->loadWithFilter());
     }
 
-    /**
-     * @return void
-     */
-    public function testApplyAggregatedTableIsSubTotals(): void
+    public function testApplyAggregatedTableIsSubTotals()
     {
         $this->selectMock->expects($this->once())
             ->method('group')
@@ -150,10 +138,7 @@ class CollectionTest extends TestCase
         $this->assertInstanceOf(get_class($this->object), $this->object->loadWithFilter());
     }
 
-    /**
-     * @return void
-     */
-    public function testApplyRulesFilterNoRulesIdsFilter(): void
+    public function testApplyRulesFilterNoRulesIdsFilter()
     {
         $this->ruleFactory->expects($this->never())
             ->method('create');
@@ -161,10 +146,7 @@ class CollectionTest extends TestCase
         $this->assertInstanceOf(get_class($this->object), $this->object->loadWithFilter());
     }
 
-    /**
-     * @return void
-     */
-    public function testApplyRulesFilterEmptyRulesList(): void
+    public function testApplyRulesFilterEmptyRulesList()
     {
         $rulesList = [];
         $ruleMock = $this->getRuleMock();
@@ -181,22 +163,21 @@ class CollectionTest extends TestCase
         $this->assertInstanceOf(get_class($this->object), $this->object->loadWithFilter());
     }
 
-    /**
-     * @return void
-     */
-    public function testApplyRulesFilterWithRulesList(): void
+    public function testApplyRulesFilterWithRulesList()
     {
         $rulesList = [1 => 'test rule 1', 10 => 'test rule 10', 30 => 'test rule 30'];
-        $this->connection
+        $this->connection->expects($this->at(1))
             ->method('quoteInto')
-            ->withConsecutive(
-                ['rule_name = ?', $rulesList[1]],
-                ['rule_name = ?', $rulesList[30]]
-            )->willReturnOnConsecutiveCalls('test_1', 'test_2');
+            ->with('rule_name = ?', $rulesList[1])
+            ->willReturn('test_1');
+        $this->connection->expects($this->at(2))
+            ->method('quoteInto')
+            ->with('rule_name = ?', $rulesList[30])
+            ->willReturn('test_2');
 
-        $this->selectMock
+        $this->selectMock->expects($this->at(3))
             ->method('where')
-            ->withConsecutive([], [implode(' OR ', ['test_1', 'test_2'])]);
+            ->with(implode(' OR ', ['test_1', 'test_2']));
 
         $ruleMock = $this->getRuleMock();
         $ruleMock->expects($this->once())
@@ -215,7 +196,7 @@ class CollectionTest extends TestCase
     /**
      * @return MockObject
      */
-    protected function getRuleMock(): MockObject
+    protected function getRuleMock()
     {
         return $this->createPartialMock(
             Rule::class,
