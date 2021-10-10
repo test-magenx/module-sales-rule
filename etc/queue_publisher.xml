@@ -9,7 +9,4 @@
     <publisher topic="sales_rule.codegenerator">
         <connection name="db" exchange="magento-db" />
     </publisher>
-    <publisher topic="sales.rule.update.coupon.usage">
-        <connection name="db" exchange="magento-db" />
-    </publisher>
 </config>
